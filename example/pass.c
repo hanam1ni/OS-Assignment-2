@@ -111,7 +111,7 @@ static int xmp_mknod(const char *path, mode_t mode, dev_t rdev)
 }
 static int xmp_mkdir(const char *path, mode_t mode)
 {
-      
+
         return 0;
 }
 static int xmp_unlink(const char *path)
@@ -229,7 +229,7 @@ static int xmp_read(const char *path, char *buf, size_t size, off_t offset,
                 fd = open(path, O_RDONLY);
         else
                 fd = fi->fh;
-        
+
         if (fd == -1)
                 return -errno;
         res = pread(fd, buf, size, offset);
@@ -249,7 +249,7 @@ static int xmp_write(const char *path, const char *buf, size_t size,
                 fd = open(path, O_WRONLY);
         else
                 fd = fi->fh;
-        
+
         if (fd == -1)
                 return -errno;
         res = pwrite(fd, buf, size, offset);
@@ -296,7 +296,7 @@ static int xmp_fallocate(const char *path, int mode,
                 fd = open(path, O_WRONLY);
         else
                 fd = fi->fh;
-        
+
         if (fd == -1)
                 return -errno;
         res = -posix_fallocate(fd, offset, length);
@@ -338,7 +338,7 @@ static int xmp_removexattr(const char *path, const char *name)
         return 0;
 }
 #endif /* HAVE_SETXATTR */
-static struct fuse_operations xmp_oper = {
+static struct fuse_operations OP = {
         .init           = xmp_init,
         .getattr        = xmp_getattr,
         .access         = xmp_access,
@@ -376,6 +376,19 @@ static struct fuse_operations xmp_oper = {
 };
 int main(int argc, char *argv[])
 {
-        umask(0);
-        return fuse_main(argc, argv, &xmp_oper, NULL);
+
+  if(argc == 5 && !strcmp(argv[3],"-t")){
+    char* tmp_img;
+    char* tmp_path;
+    tmp_img = argv[1];
+    tmp_path = argv[2];
+
+    char* cmd[500];
+    sprintf(cmd,"mount %s %s",tmp_img,tmp_path);
+    system(cmd);
+
+    fuse_main(argc,argv,OP,NULL));
+  }else{
+    printf("\t./vcowfs <Image File> <Mount Point> -t <Auto-snapshot Delay (seconds)>\n");
+  }
 }
