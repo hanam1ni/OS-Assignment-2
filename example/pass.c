@@ -387,7 +387,7 @@ int main(int argc, char *argv[])
     sprintf(cmd,"mount %s %s",tmp_img,tmp_path);
     system(cmd);
 
-    fuse_main(argc,argv,&OP,NULL));
+    fuse_main(argc,argv,&OP,NULL);
   }else{
     printf("\t./vcowfs <Image File> <Mount Point> -t <Auto-snapshot Delay (seconds)>\n");
   }
