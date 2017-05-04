@@ -7,6 +7,7 @@
 */
 #define FUSE_USE_VERSION 30
 
+
 #include <fuse.h>
 #include <stdio.h>
 #include <string.h>
@@ -46,6 +47,19 @@ static int xmp_mknod(const char *path, mode_t mode, dev_t rdev)
                 return -errno;
         return 0;
 }
+
+static int xmp_open(const char *path, struct fuse_file_info *fi)
+{
+	int res;
+
+	res = open(path, fi->flags);
+	if (res == -1)
+		return -errno;
+
+	fi->fh = res;
+	return 0;
+}
+
 
 static int xmp_mkdir(const char *path, mode_t mode)
 {
