@@ -221,7 +221,7 @@ int main(int argc, char *argv[])
 
     char* tmp_img;
     char* tmp_path;
-	char *path[2];
+    
 	tmp_img = argv[1];
     tmp_path = argv[2];
 
