@@ -4,4 +4,3 @@ mkdir ../build
 meson ../ ../build
 cd ../build
 ninja
-cd ./example
