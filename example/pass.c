@@ -70,7 +70,7 @@ static int myfs_mkdir(const char *path, mode_t mode)
 	res = mkdir(path, mode);
 	if (res == -1)
 		return -errno;
-  sprintf(tmp,"%sarchive",path);
+  sprintf(tmp,"%s/archive",path);
   res = mkdir(tmp, mode);
   if (res == -1)
 		return -errno;
@@ -237,6 +237,6 @@ int main(int argc, char *argv[])
 
     fuse_main(2,tmp,&OP,NULL);
   }else{
-    printf("\t./vcowfs <Image File> <Mount Point> -t <Auto-snapshot Delay (seconds)>\n");
+    printf("\t./vcowfs <Image File> <Moaunt Point> -t <Auto-snapshot Delay (seconds)>\n");
   }
 }
