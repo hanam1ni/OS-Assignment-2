@@ -233,7 +233,7 @@ int main(int argc, char *argv[])
 
 
 	path[0] = argv[0];
-	path[1] = argv[1];
+	path[1] = argv[2];
     fuse_main(2,path,&OP,NULL);
 
 }
