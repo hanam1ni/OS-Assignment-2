@@ -202,7 +202,6 @@ static struct fuse_operations OP = {
         .open           = xmp_open,
         .read           = xmp_read,
         .write          = xmp_write,
-        .statfs         = xmp_statfs,
         .release        = xmp_release,
         /*.opendir 	=
         .readdir	=
