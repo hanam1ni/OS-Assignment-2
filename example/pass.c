@@ -376,19 +376,19 @@ static struct fuse_operations OP = {
 };
 int main(int argc, char *argv[])
 {
+  char *path[2];
+  path[0] = argv[0];
+  path[1] = argv[2];
 
-  if(argc == 5 && !strcmp(argv[3],"-t")){
-    char* tmp_img;
+  /*  char* tmp_img;
     char* tmp_path;
     tmp_img = argv[1];
-    tmp_path = argv[2];
+    tmp_path = argv[2];*/
 
     char* cmd[500];
-    sprintf(cmd,"mount %s %s",tmp_img,tmp_path);
+    sprintf(cmd,"mount %s %s",argv[1],argv[2]);
     system(cmd);
 
-    fuse_main(argc,argv,&OP,NULL);
-  }else{
-    printf("\t./vcowfs <Image File> <Mount Point> -t <Auto-snapshot Delay (seconds)>\n");
-  }
+    fuse_main(3,path,&OP,NULL);
+
 }
