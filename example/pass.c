@@ -19,6 +19,7 @@
 #include <sys/time.h>
 
 int rev_time;
+char* mount_path;
 
 static int myfs_getattr(const char *path, struct stat *stbuf,
                        struct fuse_file_info *fi)
@@ -64,8 +65,16 @@ static int myfs_open(const char *path, struct fuse_file_info *fi)
 
 static int myfs_mkdir(const char *path, mode_t mode)
 {
-
-        return 0;
+  int res;
+  char* tmp[500];
+	res = mkdir(path, mode);
+	if (res == -1)
+		return -errno;
+  sprintf(tmp,"%sarchive",path);
+  res = mkdir(tmp, mode);
+  if (res == -1)
+		return -errno;
+  return 0;
 }
 
 static int myfs_unlink(const char *path)
