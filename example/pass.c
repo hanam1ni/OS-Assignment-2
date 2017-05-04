@@ -19,7 +19,7 @@
 #include <sys/time.h>
 
 
-static int xmp_getattr(const char *path, struct stat *stbuf,
+static int myfs_getattr(const char *path, struct stat *stbuf,
                        struct fuse_file_info *fi)
 {
         (void) fi;
@@ -30,7 +30,7 @@ static int xmp_getattr(const char *path, struct stat *stbuf,
         return 0;
 }
 
-static int xmp_mknod(const char *path, mode_t mode, dev_t rdev)
+static int myfs_mknod(const char *path, mode_t mode, dev_t rdev)
 {
         int res;
         /* On Linux this could just be 'mknod(path, mode, rdev)' but this
@@ -48,7 +48,7 @@ static int xmp_mknod(const char *path, mode_t mode, dev_t rdev)
         return 0;
 }
 
-static int xmp_open(const char *path, struct fuse_file_info *fi)
+static int myfs_open(const char *path, struct fuse_file_info *fi)
 {
 	int res;
 
@@ -61,13 +61,13 @@ static int xmp_open(const char *path, struct fuse_file_info *fi)
 }
 
 
-static int xmp_mkdir(const char *path, mode_t mode)
+static int myfs_mkdir(const char *path, mode_t mode)
 {
 
         return 0;
 }
 
-static int xmp_unlink(const char *path)
+static int myfs_unlink(const char *path)
 {
         int res;
         res = unlink(path);
@@ -76,7 +76,7 @@ static int xmp_unlink(const char *path)
         return 0;
 }
 
-static int xmp_rmdir(const char *path)
+static int myfs_rmdir(const char *path)
 {
         int res;
         res = rmdir(path);
@@ -85,7 +85,7 @@ static int xmp_rmdir(const char *path)
         return 0;
 }
 
-static int xmp_rename(const char *from, const char *to, unsigned int flags)
+static int myfs_rename(const char *from, const char *to, unsigned int flags)
 {
         int res;
         if (flags)
@@ -96,7 +96,7 @@ static int xmp_rename(const char *from, const char *to, unsigned int flags)
         return 0;
 }
 
-static int xmp_chmod(const char *path, mode_t mode,
+static int myfs_chmod(const char *path, mode_t mode,
                      struct fuse_file_info *fi)
 {
         (void) fi;
@@ -107,7 +107,7 @@ static int xmp_chmod(const char *path, mode_t mode,
         return 0;
 }
 
-static int xmp_chown(const char *path, uid_t uid, gid_t gid,
+static int myfs_chown(const char *path, uid_t uid, gid_t gid,
                      struct fuse_file_info *fi)
 {
         (void) fi;
@@ -118,7 +118,7 @@ static int xmp_chown(const char *path, uid_t uid, gid_t gid,
         return 0;
 }
 
-static int xmp_truncate(const char *path, off_t size,
+static int myfs_truncate(const char *path, off_t size,
                         struct fuse_file_info *fi)
 {
         int res;
@@ -131,7 +131,7 @@ static int xmp_truncate(const char *path, off_t size,
         return 0;
 }
 
-static int xmp_read(const char *path, char *buf, size_t size, off_t offset,
+static int myfs_read(const char *path, char *buf, size_t size, off_t offset,
                     struct fuse_file_info *fi)
 {
         int fd;
@@ -151,7 +151,7 @@ static int xmp_read(const char *path, char *buf, size_t size, off_t offset,
         return res;
 }
 
-static int xmp_write(const char *path, const char *buf, size_t size,
+static int myfs_write(const char *path, const char *buf, size_t size,
                      off_t offset, struct fuse_file_info *fi)
 {
         int fd;
@@ -172,13 +172,13 @@ static int xmp_write(const char *path, const char *buf, size_t size,
         return res;
 }
 
-static int xmp_release(const char *path, struct fuse_file_info *fi)
+static int myfs_release(const char *path, struct fuse_file_info *fi)
 {
         (void) path;
         close(fi->fh);
         return 0;
 }
-static int xmp_fsync(const char *path, int isdatasync,
+static int myfs_fsync(const char *path, int isdatasync,
                      struct fuse_file_info *fi)
 {
         /* Just a stub.  This method is optional and can safely be left
@@ -190,19 +190,19 @@ static int xmp_fsync(const char *path, int isdatasync,
 }
 
 static struct fuse_operations OP = {
-        .getattr        = xmp_getattr,
-        .mknod          = xmp_mknod,
-        .mkdir          = xmp_mkdir,
-        .unlink         = xmp_unlink,
-        .rmdir          = xmp_rmdir,
-        .rename         = xmp_rename,
-        .chmod          = xmp_chmod,
-        .chown          = xmp_chown,
-        .truncate       = xmp_truncate,
-        .open           = xmp_open,
-        .read           = xmp_read,
-        .write          = xmp_write,
-        .release        = xmp_release,
+        .getattr        = myfs_getattr,
+        .mknod          = myfs_mknod,
+        .mkdir          = myfs_mkdir,
+        .unlink         = myfs_unlink,
+        .rmdir          = myfs_rmdir,
+        .rename         = myfs_rename,
+        .chmod          = myfs_chmod,
+        .chown          = myfs_chown,
+        .truncate       = myfs_truncate,
+        .open           = myfs_open,
+        .read           = myfs_read,
+        .write          = myfs_write,
+        .release        = myfs_release,
         /*.opendir 	=
         .readdir	=
         .releasedir =
@@ -221,7 +221,7 @@ int main(int argc, char *argv[])
 
     char* tmp_img;
     char* tmp_path;
-    
+
 	tmp_img = argv[1];
     tmp_path = argv[2];
 
