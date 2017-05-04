@@ -18,6 +18,7 @@
 #include <errno.h>
 #include <sys/time.h>
 
+int rev_time;
 
 static int xmp_getattr(const char *path, struct stat *stbuf,
                        struct fuse_file_info *fi)
@@ -211,29 +212,22 @@ static struct fuse_operations OP = {
 
 
 };
+
 int main(int argc, char *argv[])
 {
-  char *path[2];
-  /*  char* tmp_img;
-    char* tmp_path;
-    tmp_img = argv[1];
-    tmp_path = argv[2];*/
-
-    char* tmp_img;
-    char* tmp_path;
-    
-	tmp_img = argv[1];
-    tmp_path = argv[2];
-
+  if(!strcmp(argv[3], "-t")){
+    char *tmp[2];
+    tmp[0] = argv[0];
+  	tmp[1] = argv[2];
 
     char* cmd[500];
     sprintf(cmd,"mount %s %s",argv[1],argv[2]);
     system(cmd);
 
+    rev_time = atoi(argv[5]);
 
-
-	path[0] = argv[0];
-	path[1] = argv[2];
     fuse_main(2,path,&OP,NULL);
-
+  }else{
+    printf("\t./vcowfs <Image File> <Mount Point> -t <Auto-snapshot Delay (seconds)>\n");
+  }
 }
