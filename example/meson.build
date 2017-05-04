@@ -1,10 +1,10 @@
 # Attention, emacs, please use -*- mode: python -*-
 # (even though this isn't actually Python code)
 
-examples = [ 'hello' ]
+examples = [ 'pass' ]
 
 foreach ex : examples
-    executable('nohello', ex + '.c',
+    executable(ex, ex + '.c',
                include_directories: include_dirs,
                link_with: [ libfuse ],
                install: false)
