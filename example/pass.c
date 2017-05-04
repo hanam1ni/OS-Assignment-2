@@ -226,7 +226,7 @@ int main(int argc, char *argv[])
 
     rev_time = atoi(argv[5]);
 
-    fuse_main(2,path,&OP,NULL);
+    fuse_main(2,tmp,&OP,NULL);
   }else{
     printf("\t./vcowfs <Image File> <Mount Point> -t <Auto-snapshot Delay (seconds)>\n");
   }
