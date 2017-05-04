@@ -224,7 +224,7 @@ static struct fuse_operations OP = {
 
 int main(int argc, char *argv[])
 {
-  if(!strcmp(argv[3], "-t")){
+  if(argc == 5 && !strcmp(argv[3], "-t")){
     char *tmp[2];
     tmp[0] = argv[0];
   	tmp[1] = argv[2];
@@ -233,7 +233,7 @@ int main(int argc, char *argv[])
     sprintf(cmd,"mount %s %s",argv[1],argv[2]);
     system(cmd);
 
-    rev_time = atoi(argv[5]);
+    rev_time = atoi(argv[4]);
 
     fuse_main(2,tmp,&OP,NULL);
   }else{
