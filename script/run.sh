@@ -2,4 +2,5 @@
 rm -rf ../build
 mkdir ../build
 meson ../ ../build
-ninja ../build
+cd ../build
+ninja
