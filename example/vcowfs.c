@@ -18,8 +18,21 @@
 #include <errno.h>
 #include <sys/time.h>
 
+#include <time.h>
+#include <utime.h>
+
 int rev_time;
 char* mount_path;
+
+char* get_filename(char* str) {
+    int i, index=strlen(str)-1;
+    for(i=0; i<=index; index--) {
+        if(str[index] == '/') {
+            return &str[index];
+        }
+    }
+    return NULL;
+}
 
 static int myfs_getattr(const char *path, struct stat *stbuf,
                        struct fuse_file_info *fi)
@@ -167,8 +180,21 @@ static int myfs_write(const char *path, const char *buf, size_t size,
         int fd;
         int res;
         (void) fi;
+        char fullBackupPath[500];
+        char fullMountPoint[500];
+        FILE * openFileforBackup;
+        time_t nowTime = time(NULL);
+        int lastModifiedTime;
+        int lastVersion = 1;
+        struct stat fileStat;
+        time_t secondLastModifiedTime;
+
+        sprintf(fullMountPoint, "%s%s", mount_path, path);
+        stat(fullMountPoint, &fileStat);
+        secondLastModifiedTime = fileStat.st_mtime;
+
         if(fi == NULL)
-                fd = open(path, O_WRONLY);
+                fd = open(fullMountPoint, O_WRONLY);
         else
                 fd = fi->fh;
 
@@ -179,6 +205,34 @@ static int myfs_write(const char *path, const char *buf, size_t size,
                 res = -errno;
         if(fi == NULL)
                 close(fd);
+
+        do
+        {
+            sprintf(fullBackupPath, "%s%s%s%c%d", mount_path, "/archive/", path, '.', lastVersion);
+            openFileforBackup = fopen(fullBackupPath, "r");
+            if(!openFileforBackup) break;
+            lastVersion++;
+            fclose(openFileforBackup);
+
+        } while (openFileforBackup);
+
+        // retrieve for newest Last version number
+
+        if (nowTime - secondLastModifiedTime > rev_time) // create snapshot
+        {
+            printf("Create snapshot for last version %d.\n", lastVersion);
+        } else { // replace snapshot with new information
+            printf("Don't snap file, Just replace new information to last Version.\n");
+            if(lastVersion > 1) lastVersion--;
+            sprintf(fullBackupPath, "%s%s%s%c%d", mount_path, "/archive/", path, '.', lastVersion);
+        }
+
+        fd  = open(fullBackupPath, O_WRONLY);
+        res = pwrite(fd, buf, size, offset);
+        close(fd);
+
+        printf("Last time is %d\n", secondLastModifiedTime);
+
         return res;
 }
 
@@ -199,6 +253,34 @@ static int myfs_fsync(const char *path, int isdatasync,
         return 0;
 }
 
+static int myfs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
+		       off_t offset, struct fuse_file_info *fi,
+		       enum fuse_readdir_flags flags)
+{
+	DIR *dp;
+	struct dirent *de;
+
+	(void) offset;
+	(void) fi;
+	(void) flags;
+
+	dp = opendir(path);
+	if (dp == NULL)
+		return -errno;
+
+	while ((de = readdir(dp)) != NULL) {
+		struct stat st;
+		memset(&st, 0, sizeof(st));
+		st.st_ino = de->d_ino;
+		st.st_mode = de->d_type << 12;
+		if (filler(buf, de->d_name, &st, 0, 0))
+			break;
+	}
+
+	closedir(dp);
+	return 0;
+}
+
 static struct fuse_operations OP = {
         .getattr        = myfs_getattr,
         .mknod          = myfs_mknod,
@@ -213,9 +295,9 @@ static struct fuse_operations OP = {
         .read           = myfs_read,
         .write          = myfs_write,
         .release        = myfs_release,
-        /*.opendir 	=
-        .readdir	=
-        .releasedir =
+        //.opendir 	=
+        .readdir	= myfs_readdir
+        /*.releasedir =
         .fsync 		=
         .fsyncdir 	= */
 
@@ -233,8 +315,10 @@ int main(int argc, char *argv[])
     sprintf(cmd,"mount %s %s",argv[1],argv[2]);
     system(cmd);
 
-    rev_time = atoi(argv[4]);
+    mount_path = argv[2]; // create variable for mount path
 
+    rev_time = atoi(argv[4]);
+    umask(0);
     fuse_main(2,tmp,&OP,NULL);
   }else{
     printf("\t./vcowfs <Image File> <Moaunt Point> -t <Auto-snapshot Delay (seconds)>\n");
