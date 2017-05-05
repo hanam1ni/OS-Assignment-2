@@ -28,7 +28,7 @@ char* get_filename(char* str) {
     int i, index=strlen(str)-1;
     for(i=0; i<=index; index--) {
         if(str[index] == '/') {
-            return &str[index]; 
+            return &str[index];
         }
     }
     return NULL;
@@ -316,7 +316,7 @@ int main(int argc, char *argv[])
     sprintf(cmd,"mount %s %s",argv[1],argv[2]);
     system(cmd);
 
-    mount_path = argv[2; // create variable for mount path
+    mount_path = argv[2]; // create variable for mount path
 
     rev_time = atoi(argv[4]);
     umask(0);
