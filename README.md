@@ -36,28 +36,12 @@ libfuse tarball, create a (temporary) build directory and run Meson:
     $ md build; cd build
     $ meson ..
 
-Normally, the default build options will work fine. If you
-nevertheless want to adjust them, you can do so with the *mesonconf*
-command:
+    $ ninja       // Create executable file
+    $ cd example  // Change directory to executable file location
 
-    $ mesonconf # list options
-    $ mesonconf  -D disable-mtab=true # set an option
-
-To build, test and install libfuse, you then use Ninja:
-
-    $ ninja
-    $ sudo python3 -m pytest test/
-    $ sudo ninja install
-
-Running the tests requires the [py.test](http://www.pytest.org/)
-Python module. Instead of running the tests as root, the majority of
-tests can also be run as a regular user if *util/fusermount3* is made
-setuid root first:
-
-    $ sudo chown root:root util/fusermount3
-    $ sudo chmod 4755 util/fusermount3
-    $ python3 -m pytest test/
-
+    $ dd if=/dev/zero of=storage.img bs=512k count=2  // Create storage image
+    $ md tmp
+    $ sudo ./vcowfs storage.img tmp -t 60             // Mount Filesystem reversion time every 60 seconds
 
 Alternate Installation
 ----------------------
