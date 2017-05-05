@@ -189,8 +189,12 @@ static int myfs_write(const char *path, const char *buf, size_t size,
         struct stat fileStat;
         time_t secondLastModifiedTime;
 
+        sprintf(fullMountPoint, "%s%s", mount_path, path);
+        stat(fullMountPoint, &fileStat);
+        secondLastModifiedTime = fileStat.st_mtime;
+
         if(fi == NULL)
-                fd = open(path, O_WRONLY);
+                fd = open(fullMountPoint, O_WRONLY);
         else
                 fd = fi->fh;
 
@@ -201,11 +205,6 @@ static int myfs_write(const char *path, const char *buf, size_t size,
                 res = -errno;
         if(fi == NULL)
                 close(fd);
-
-        sprintf(fullMountPoint, "%s%s", mount_path, path);
-        stat(fullMountPoint, &fileStat);
-
-        secondLastModifiedTime = fileStat.st_mtime;
 
         do
         {
@@ -227,7 +226,7 @@ static int myfs_write(const char *path, const char *buf, size_t size,
             if(lastVersion > 1) lastVersion--;
             sprintf(fullBackupPath, "%s%s%s%c%d", mount_path, "/archive/", path, '.', lastVersion);
         }
-        
+
         fd  = open(fullBackupPath, O_WRONLY);
         res = pwrite(fd, buf, size, offset);
         close(fd);
