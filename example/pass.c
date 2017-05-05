@@ -212,27 +212,24 @@ static int myfs_write(const char *path, const char *buf, size_t size,
         {
             printf("Hi create snap\n");
 
-            /*sprintf(fullBackupPath, "%s%s%s%c%d", mount_path, "/archive/", path, '.', lastVersion);
-
-            FILE * openFileforBackup = fopen(fullBackupPath, "r");
-            while (openFileforBackup) {
-                lastVersion++;
-                fclose(openFileforBackup);
-
-                sprintf(fullBackupPath, "%s%s%s%c%d", mount_path, "/archive/", path, '.', lastVersion);
-                openFileforBackup = fopen(fullBackupPath, "r");
-            }*/
-
             do
             {
                 sprintf(fullBackupPath, "%s%s%s%c%d", mount_path, "/archive/", path, '.', lastVersion);
                 openFileforBackup = fopen(fullBackupPath, "r");
+                if(!openFileforBackup) break;
                 lastVersion++;
                 fclose(openFileforBackup);
 
             } while (openFileforBackup);
 
             // retrieve Last version number
+
+            printf("Create snapshot for last version %d\n", lastVersion);
+
+            res = open(fullBackupPath, O_CREAT | O_EXCL | O_WRONLY);
+            fd = open(fullBackupPath, O_WRONLY);
+            res = pwrite(fd, buf, size, offset);
+            close(fd);
 
         } else {
             printf("Don't snap file\n");
