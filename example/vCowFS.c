@@ -227,8 +227,7 @@ static int myfs_write(const char *path, const char *buf, size_t size,
             if(lastVersion > 1) lastVersion--;
             sprintf(fullBackupPath, "%s%s%s%c%d", mount_path, "/archive/", path, '.', lastVersion);
         }
-
-        res = open(fullBackupPath, O_CREAT | O_EXCL | O_WRONLY);
+        
         fd  = open(fullBackupPath, O_WRONLY);
         res = pwrite(fd, buf, size, offset);
         close(fd);
