@@ -18,6 +18,9 @@
 #include <errno.h>
 #include <sys/time.h>
 
+#include <time.h>
+#include <utime.h>
+
 int rev_time;
 char* mount_path;
 
@@ -167,6 +170,13 @@ static int myfs_write(const char *path, const char *buf, size_t size,
         int fd;
         int res;
         (void) fi;
+        char fullMountPoint[500];
+        time_t nowTime = time(NULL);
+        int lastModifiedTime;
+
+        struct stat fileStat;
+        time_t secondLastModifiedTime;
+
         if(fi == NULL)
                 fd = open(path, O_WRONLY);
         else
@@ -179,6 +189,23 @@ static int myfs_write(const char *path, const char *buf, size_t size,
                 res = -errno;
         if(fi == NULL)
                 close(fd);
+
+        sprintf(fullMountPoint, "%s%s", mount_path, path);
+        stat(fullMountPoint, &fileStat);
+
+        secondLastModifiedTime = fileStat.st_mtime;
+
+
+
+        if (nowTime - secondLastModifiedTime > rev_time) // create snapshot
+        {
+            printf("Hi create snap\n");
+        }
+
+        printf("Last time is %d\n", secondLastModifiedTime);
+
+
+
         return res;
 }
 
@@ -232,6 +259,8 @@ int main(int argc, char *argv[])
     char* cmd[500];
     sprintf(cmd,"mount %s %s",argv[1],argv[2]);
     system(cmd);
+
+    mount_path = argv[2; // create variable for mount path
 
     rev_time = atoi(argv[4]);
 
