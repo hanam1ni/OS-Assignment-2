@@ -199,6 +199,34 @@ static int myfs_fsync(const char *path, int isdatasync,
         return 0;
 }
 
+static int myfs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
+		       off_t offset, struct fuse_file_info *fi,
+		       enum fuse_readdir_flags flags)
+{
+	DIR *dp;
+	struct dirent *de;
+
+	(void) offset;
+	(void) fi;
+	(void) flags;
+
+	dp = opendir(path);
+	if (dp == NULL)
+		return -errno;
+
+	while ((de = readdir(dp)) != NULL) {
+		struct stat st;
+		memset(&st, 0, sizeof(st));
+		st.st_ino = de->d_ino;
+		st.st_mode = de->d_type << 12;
+		if (filler(buf, de->d_name, &st, 0, 0))
+			break;
+	}
+
+	closedir(dp);
+	return 0;
+}
+
 static struct fuse_operations OP = {
         .getattr        = myfs_getattr,
         .mknod          = myfs_mknod,
@@ -213,9 +241,9 @@ static struct fuse_operations OP = {
         .read           = myfs_read,
         .write          = myfs_write,
         .release        = myfs_release,
-        /*.opendir 	=
-        .readdir	=
-        .releasedir =
+        //.opendir 	=
+        .readdir	= myfs_readdir
+        /*.releasedir =
         .fsync 		=
         .fsyncdir 	= */
 
@@ -234,7 +262,7 @@ int main(int argc, char *argv[])
     system(cmd);
 
     rev_time = atoi(argv[4]);
-
+    umask(0);
     fuse_main(2,tmp,&OP,NULL);
   }else{
     printf("\t./vcowfs <Image File> <Moaunt Point> -t <Auto-snapshot Delay (seconds)>\n");
