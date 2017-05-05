@@ -18,8 +18,21 @@
 #include <errno.h>
 #include <sys/time.h>
 
+#include <time.h>
+#include <utime.h>
+
 int rev_time;
 char* mount_path;
+
+char* get_filename(char* str) {
+    int i, index=strlen(str)-1;
+    for(i=0; i<=index; index--) {
+        if(str[index] == '/') {
+            return &str[index]; 
+        }
+    }
+    return NULL;
+}
 
 static int myfs_getattr(const char *path, struct stat *stbuf,
                        struct fuse_file_info *fi)
@@ -167,6 +180,14 @@ static int myfs_write(const char *path, const char *buf, size_t size,
         int fd;
         int res;
         (void) fi;
+        char fullBackupPath[500];
+        char fullMountPoint[500];
+        time_t nowTime = time(NULL);
+        int lastModifiedTime;
+        int lastVersion = 1;
+        struct stat fileStat;
+        time_t secondLastModifiedTime;
+
         if(fi == NULL)
                 fd = open(path, O_WRONLY);
         else
@@ -179,6 +200,40 @@ static int myfs_write(const char *path, const char *buf, size_t size,
                 res = -errno;
         if(fi == NULL)
                 close(fd);
+
+        sprintf(fullMountPoint, "%s%s", mount_path, path);
+        stat(fullMountPoint, &fileStat);
+
+        secondLastModifiedTime = fileStat.st_mtime;
+
+        do
+        {
+            sprintf(fullBackupPath, "%s%s%s%c%d", mount_path, "/archive/", path, '.', lastVersion);
+            openFileforBackup = fopen(fullBackupPath, "r");
+            if(!openFileforBackup) break;
+            lastVersion++;
+            fclose(openFileforBackup);
+
+        } while (openFileforBackup);
+
+        // retrieve for newest Last version number
+
+        if (nowTime - secondLastModifiedTime > rev_time) // create snapshot
+        {
+            printf("Create snapshot for last version %d.\n", lastVersion);
+        } else { // replace snapshot with new information
+            printf("Don't snap file, Just replace new information to last Version.\n");
+            if(lastVersion > 1) lastVersion--;
+            sprintf(fullBackupPath, "%s%s%s%c%d", mount_path, "/archive/", path, '.', lastVersion);
+        }
+
+        res = open(fullBackupPath, O_CREAT | O_EXCL | O_WRONLY);
+        fd  = open(fullBackupPath, O_WRONLY);
+        res = pwrite(fd, buf, size, offset);
+        close(fd);
+
+        printf("Last time is %d\n", secondLastModifiedTime);
+
         return res;
 }
 
@@ -260,6 +315,8 @@ int main(int argc, char *argv[])
     char* cmd[500];
     sprintf(cmd,"mount %s %s",argv[1],argv[2]);
     system(cmd);
+
+    mount_path = argv[2; // create variable for mount path
 
     rev_time = atoi(argv[4]);
     umask(0);
