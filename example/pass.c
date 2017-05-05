@@ -24,6 +24,16 @@
 int rev_time;
 char* mount_path;
 
+char* get_filename(char* str) {
+    int i, index=strlen(str)-1;
+    for(i=0; i<=index; index--) {
+        if(str[index] == '/') {
+            return &str[index]; 
+        }
+    }
+    return NULL;
+}
+
 static int myfs_getattr(const char *path, struct stat *stbuf,
                        struct fuse_file_info *fi)
 {
@@ -170,10 +180,11 @@ static int myfs_write(const char *path, const char *buf, size_t size,
         int fd;
         int res;
         (void) fi;
+        char fullBackupPath[500];
         char fullMountPoint[500];
         time_t nowTime = time(NULL);
         int lastModifiedTime;
-
+        int lastVersion = 1;
         struct stat fileStat;
         time_t secondLastModifiedTime;
 
@@ -200,6 +211,31 @@ static int myfs_write(const char *path, const char *buf, size_t size,
         if (nowTime - secondLastModifiedTime > rev_time) // create snapshot
         {
             printf("Hi create snap\n");
+
+            /*sprintf(fullBackupPath, "%s%s%s%c%d", mount_path, "/archive/", path, '.', lastVersion);
+
+            FILE * openFileforBackup = fopen(fullBackupPath, "r");
+            while (openFileforBackup) {
+                lastVersion++;
+                fclose(openFileforBackup);
+
+                sprintf(fullBackupPath, "%s%s%s%c%d", mount_path, "/archive/", path, '.', lastVersion);
+                openFileforBackup = fopen(fullBackupPath, "r");
+            }*/
+
+            do
+            {
+                sprintf(fullBackupPath, "%s%s%s%c%d", mount_path, "/archive/", path, '.', lastVersion);
+                openFileforBackup = fopen(fullBackupPath, "r");
+                lastVersion++;
+                fclose(openFileforBackup);
+
+            } while (openFileforBackup);
+
+            // retrieve Last version number
+
+        } else {
+            printf("Don't snap file\n");
         }
 
         printf("Last time is %d\n", secondLastModifiedTime);
