@@ -223,7 +223,7 @@ static int myfs_write(const char *path, const char *buf, size_t size,
             printf("Create snapshot for last version %d.\n", lastVersion);
         } else { // replace snapshot with new information
             printf("Don't snap file, Just replace new information to last Version.\n");
-            lastVersion--;
+            if(lastVersion > 1) lastVersion--;
             sprintf(fullBackupPath, "%s%s%s%c%d", mount_path, "/archive/", path, '.', lastVersion);
         }
 
