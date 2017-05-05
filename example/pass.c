@@ -206,38 +206,33 @@ static int myfs_write(const char *path, const char *buf, size_t size,
 
         secondLastModifiedTime = fileStat.st_mtime;
 
+        do
+        {
+            sprintf(fullBackupPath, "%s%s%s%c%d", mount_path, "/archive/", path, '.', lastVersion);
+            openFileforBackup = fopen(fullBackupPath, "r");
+            if(!openFileforBackup) break;
+            lastVersion++;
+            fclose(openFileforBackup);
 
+        } while (openFileforBackup);
+
+        // retrieve for newest Last version number
 
         if (nowTime - secondLastModifiedTime > rev_time) // create snapshot
         {
-            printf("Hi create snap\n");
-
-            do
-            {
-                sprintf(fullBackupPath, "%s%s%s%c%d", mount_path, "/archive/", path, '.', lastVersion);
-                openFileforBackup = fopen(fullBackupPath, "r");
-                if(!openFileforBackup) break;
-                lastVersion++;
-                fclose(openFileforBackup);
-
-            } while (openFileforBackup);
-
-            // retrieve Last version number
-
-            printf("Create snapshot for last version %d\n", lastVersion);
-
-            res = open(fullBackupPath, O_CREAT | O_EXCL | O_WRONLY);
-            fd = open(fullBackupPath, O_WRONLY);
-            res = pwrite(fd, buf, size, offset);
-            close(fd);
-
-        } else {
-            printf("Don't snap file\n");
+            printf("Create snapshot for last version %d.\n", lastVersion);
+        } else { // replace snapshot with new information
+            printf("Don't snap file, Just replace new information to last Version.\n");
+            lastVersion--;
+            sprintf(fullBackupPath, "%s%s%s%c%d", mount_path, "/archive/", path, '.', lastVersion);
         }
 
+        res = open(fullBackupPath, O_CREAT | O_EXCL | O_WRONLY);
+        fd  = open(fullBackupPath, O_WRONLY);
+        res = pwrite(fd, buf, size, offset);
+        close(fd);
+
         printf("Last time is %d\n", secondLastModifiedTime);
-
-
 
         return res;
 }
