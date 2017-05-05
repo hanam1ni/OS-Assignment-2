@@ -1,4 +1,4 @@
-examples = [ 'vCowFS' ]
+examples = [ 'vcowfs' ]
 
 foreach ex : examples
     executable(ex, ex + '.c',
