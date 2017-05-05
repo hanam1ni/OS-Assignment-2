@@ -182,6 +182,7 @@ static int myfs_write(const char *path, const char *buf, size_t size,
         (void) fi;
         char fullBackupPath[500];
         char fullMountPoint[500];
+        FILE * openFileforBackup;
         time_t nowTime = time(NULL);
         int lastModifiedTime;
         int lastVersion = 1;
